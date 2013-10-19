@@ -22,6 +22,8 @@ dbConnection.connect();
  * assignment; you can re-use most of that code here. */
 
 var router = {"/classes/room": requestHandler};
-var server = http.createServer(requestHandler.handleRequest);
+var server = http.createServer(function(req, res){
+  requestHandler.handleRequest(req, res, dbConnection);
+});
 console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
