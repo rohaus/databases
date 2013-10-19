@@ -1,4 +1,3 @@
-// From Web-historian - Keep this
 var mysql = require('mysql');
 var url = require('url');
 var http = require('http');
@@ -69,15 +68,10 @@ module.exports.handleRequest = function (req, res, connection) {
       req.on('end', function(){
         console.log(data);
         var message = JSON.parse(data);
-        escapedMsg = message.text.replace("'","\\'");
-        var insertMsgSQL = "INSERT into Messages (Text, Username, Roomname) values ('"+ escapedMsg + "', '" + message.username +"', '"+ message.roomname +"')";
-        connection.query(insertMsgSQL, function(errs, rows, fields){
+        var insertMsgSQL = "Insert into Messages SET ?";
+        connection.query(insertMsgSQL, message, function(errs, rows, fields){
           console.log("SQL query error:",errs);
         });
-        // objectID++;
-        // message.objectID = objectID;
-        // message.createdAt = Date();
-        // messages.push(message);
         sendResponse(res, "", 201);
       });
     }
