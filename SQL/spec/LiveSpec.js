@@ -1,6 +1,5 @@
 /* You'll need to have MySQL running and your Node server running
  * for these tests to pass. */
-
 var mysql = require('mysql');
 var request = require("request");
 
@@ -14,7 +13,7 @@ describe("Persistent Node Chat Server", function() {
       database: "chat_rr1012"
     });
     dbConnection.connect();
-    var tablename = "Users"; // TODO: fill this out
+    var tablename = "Messages"; // TODO: fill this out
 
     /* Empty the db table before each test so that multiple tests
      * (or repeated runs of the tests) won't screw each other up: */
@@ -27,17 +26,14 @@ describe("Persistent Node Chat Server", function() {
 
   it("Should insert posted messages to the DB", function(done) {
     request({method: "POST",
-             json: true,
              uri: "http://127.0.0.1:8081/classes/room",
              body: {username: "Valjean",
-                    message: "In mercy's name, three days is all I need."}
+                    text: "In mercy's name, three days is all I need."}
             },
             function(error, response, body) {
               /* Now if we look in the database, we should find the
                * posted message there. */
-               console.log('response: ',response.body);
-
-              var queryString = "";
+              var queryString = "SELECT * FROM MESSAGES;";
               var queryArgs = [];
               /* TODO: Change the above queryString & queryArgs to match your schema design
                * The exact query string and query args to use
@@ -47,10 +43,9 @@ describe("Persistent Node Chat Server", function() {
                 function(err, results, fields) {
                   // Should have one result:
                   results = results || [{}];
-
                   expect(results.length).toEqual(1);
                   expect(results[0].username).toEqual("Valjean");
-                  expect(results[0].message).toEqual("In mercy's name, three days is all I need.");
+                  expect(results[0].text).toEqual("In mercy's name, three days is all I need.");
                   /* TODO: You will need to change these tests if the
                    * column names in your schema are different from
                    * mine! */
@@ -76,7 +71,7 @@ describe("Persistent Node Chat Server", function() {
           function(error, response, body) {
             var messageLog = JSON.parse(body);
             expect(messageLog[0].username).toEqual("Javert");
-            expect(messageLog[0].message).toEqual("Men like you can never change!");
+            expect(messageLog[0].text).toEqual("Men like you can never change!");
             done();
           });
       });

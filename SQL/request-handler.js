@@ -24,9 +24,9 @@ module.exports.handleRequest = function (req, res, connection) {
     if( req.method === "OPTIONS" ){
       sendResponse(res, '');
     }else if( req.method === "GET" ){
-      var readTextSQL = "SELECT text from messages ORDER by id DESC;";
-      var readUserSQL = "SELECT username from messages ORDER by id DESC;";
-      var readRoomSQL = "SELECT roomname from messages ORDER by id DESC;";
+      var readTextSQL = "SELECT text from messages ORDER by id;";
+      var readUserSQL = "SELECT username from messages ORDER by id;";
+      var readRoomSQL = "SELECT roomname from messages ORDER by id;";
 
       var textCb = function(rows){
         for( var i = 0; i < rows.length; i++ ){
@@ -47,15 +47,15 @@ module.exports.handleRequest = function (req, res, connection) {
         }
       };
 
-      var textSQL = connection.query(readTextSQL, function(errs, rows, fields){
+      connection.query(readTextSQL, function(errs, rows, fields){
         // console.log("SQL query error:",errs);
         textCb(rows);
       });
-      var userSQL = connection.query(readUserSQL, function(errs, rows, fields){
+      connection.query(readUserSQL, function(errs, rows, fields){
         // console.log("SQL query error:",errs);
         userCb(rows);
       });
-      var roomSQL = connection.query(readRoomSQL, function(errs, rows, fields){
+      connection.query(readRoomSQL, function(errs, rows, fields){
         // console.log("SQL query error:",errs);
         roomCb(rows);
         sendResponse(res, JSON.stringify(messages));
