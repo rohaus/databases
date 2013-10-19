@@ -66,7 +66,6 @@ module.exports.handleRequest = function (req, res, connection) {
         data += chunk;
       });
       req.on('end', function(){
-        console.log(data);
         var message = JSON.parse(data);
         var insertMsgSQL = "Insert into Messages SET ?";
         connection.query(insertMsgSQL, message, function(errs, rows, fields){

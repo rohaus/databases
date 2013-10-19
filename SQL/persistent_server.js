@@ -1,6 +1,5 @@
 var mysql = require('mysql');
 var http = require("http");
-var url = require("url");
 var requestHandler = require("./request-handler.js");
 
 var port = 8081;
@@ -21,7 +20,6 @@ dbConnection.connect();
 /* You already know how to create an http server from the previous
  * assignment; you can re-use most of that code here. */
 
-var router = {"/classes/room": requestHandler};
 var server = http.createServer(function(req, res){
   requestHandler.handleRequest(req, res, dbConnection);
 });
