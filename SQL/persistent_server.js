@@ -1,14 +1,15 @@
 var mysql = require('mysql');
-/* If the node mysql module is not found on your system, you may
- * need to do an "sudo npm install -g mysql". */
+var http = require("http");
+var url = require("url");
+var requestHandler = require("./request-handler.js");
 
-/* You'll need to fill the following out with your mysql username and password.
- * database: "chat" specifies that we're using the database called
- * "chat", which we created by running schema.sql.*/
+var port = 8081;
+var ip = "127.0.0.1";
+
 var dbConnection = mysql.createConnection({
-  user: "",
+  user: "root",
   password: "",
-  database: "chat"
+  database: "chat_rr1012"
 });
 
 dbConnection.connect();
@@ -19,3 +20,8 @@ dbConnection.connect();
 
 /* You already know how to create an http server from the previous
  * assignment; you can re-use most of that code here. */
+
+var router = {"/classes/room": requestHandler};
+var server = http.createServer(requestHandler.handleRequest);
+console.log("Listening on http://" + ip + ":" + port);
+server.listen(port, ip);
