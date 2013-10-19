@@ -11,8 +11,6 @@ var headers = {
   "Content-Type": "application/json"
 };
 
-var messages = [];
-
 var sendResponse = module.exports.sendResponse = function(response, message, status){
   status = status || 200;
   response.writeHead(status, headers);
@@ -20,34 +18,49 @@ var sendResponse = module.exports.sendResponse = function(response, message, sta
 };
 
 module.exports.handleRequest = function (req, res, connection) {
+  var messages = [];
+
   if( url.parse(req.url).pathname === "/classes/room" ){
     if( req.method === "OPTIONS" ){
       sendResponse(res, '');
     }else if( req.method === "GET" ){
-      var messageSQL;
-      var readTextSQL = "SELECT text from messages ORDER by id;";
-      var readUserSQL = "SELECT username from messages ORDER by id;";
-      var readRoomSQL = "SELECT roomname from messages ORDER by id;";
+      var readTextSQL = "SELECT text from messages ORDER by id DESC;";
+      var readUserSQL = "SELECT username from messages ORDER by id DESC;";
+      var readRoomSQL = "SELECT roomname from messages ORDER by id DESC;";
+
+      var textCb = function(rows){
+        for( var i = 0; i < rows.length; i++ ){
+          messages[i] = messages[i] || {};
+          messages[i]['text'] = rows[i]['text'];
+        }
+      };
+      var userCb = function(rows){
+        for( var i = 0; i < rows.length; i++ ){
+          messages[i] = messages[i] || {};
+          messages[i]['username'] = rows[i]['username'];
+        }
+      };
+      var roomCb = function(rows){
+        for( var i = 0; i < rows.length; i++ ){
+          messages[i] = messages[i] || {};
+          messages[i]['roomname'] = rows[i]['roomname'];
+        }
+      };
+
       var textSQL = connection.query(readTextSQL, function(errs, rows, fields){
-        console.log("SQL query error:",errs);
-        return JSON.stringify(rows);
+        // console.log("SQL query error:",errs);
+        textCb(rows);
       });
       var userSQL = connection.query(readUserSQL, function(errs, rows, fields){
-        console.log("SQL query error:",errs);
+        // console.log("SQL query error:",errs);
+        userCb(rows);
       });
       var roomSQL = connection.query(readRoomSQL, function(errs, rows, fields){
-        console.log("SQL query error:",errs);
+        // console.log("SQL query error:",errs);
+        roomCb(rows);
+        sendResponse(res, JSON.stringify(messages));
       });
-      for( var i = 0; i < textSQL.length; i++ ){
-        messageSQL = {};
-        messageSQL.text = textSQL[i];
-        messageSQL.roomname = roomSQL[i];
-        messageSQL.username = userSQL[i];
-        messages.push(messageSQL);
-      }
-      console.log("textSQL:", textSQL);
-      console.log("Messages are:",messages);
-      sendResponse(res, JSON.stringify(messages));
+
     }else if( req.method === "POST" ){
       var data = "";
       req.on('data', function(chunk){
