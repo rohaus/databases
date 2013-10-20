@@ -2,6 +2,7 @@ var mysql = require('mysql');
 var url = require('url');
 var http = require('http');
 var Sequelize = require("sequelize");
+// var Q = require("q");
 
 var headers = {
   "access-control-allow-origin": "*",
@@ -14,10 +15,21 @@ var headers = {
 var sequelize = new Sequelize("chat_kh0107", "root");
 
 var Messages = sequelize.define('Messages', {
-  username: Sequelize.STRING,
-  text: Sequelize.TEXT,
-  roomname: Sequelize.STRING
+  text: Sequelize.TEXT
 });
+
+var Users = sequelize.define('Users', {
+  username: Sequelize.STRING
+});
+
+var Rooms = sequelize.define('Rooms', {
+  roomname: { type: Sequelize.STRING }
+});
+
+Users.hasMany(Messages, {as: 'text'});
+Rooms.hasMany(Messages, {as: 'text'});
+Messages.belongsTo(Users);
+Messages.belongsTo(Rooms);
 
 var sendResponse = module.exports.sendResponse = function(response, message, status){
   status = status || 200;
@@ -27,7 +39,7 @@ var sendResponse = module.exports.sendResponse = function(response, message, sta
 
 module.exports.handleRequest = function (req, res) {
   var messages = [];
-  Messages.sync();
+  sequelize.sync();
 
   if( url.parse(req.url).pathname === "/classes/room" ){
     if( req.method === "OPTIONS" ){
@@ -46,9 +58,17 @@ module.exports.handleRequest = function (req, res) {
       });
       req.on('end', function(){
         var message = JSON.parse(data);
-        var newMessage = Messages.build(message);
-        newMessage.save().success(function(){
-          console.log("SUCCESS!");
+        sequelize.sync().success(function(){
+          Messages.create({text: message.text}).success(function(msg){
+            Users.create({username: message.username}).success(function(user){
+              console.log("MSG:", msg);
+              console.log("USER:", user);
+              msg.updateAttributes({UserId: user.dataValues.id});
+            });
+            Rooms.create({roomname: message.roomname}).success(function(room){
+              msg.updateAttributes({RoomId: room.dataValues.id});
+            });
+          });
         });
         sendResponse(res, "", 201);
       });

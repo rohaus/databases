@@ -4,6 +4,7 @@
   "dependencies": {
     "request": "~2.27.0",
     "mysql": "~2.0.0",
-    "sequelize": "~2.0.0-beta.0"
+    "sequelize": "~2.0.0-beta.0",
+    "q": "~0.9.7"
   }
 }
